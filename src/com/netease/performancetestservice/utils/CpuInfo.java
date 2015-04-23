@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.netease.qa.emmagee.utils;
+package com.netease.performancetestservice.utils;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -29,13 +29,13 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import com.netease.qa.emmagee.service.EmmageeService;
+import com.netease.performancetestservice.MainService;
+import com.netease.performancetestservice.R;
 
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
-import com.netease.qa.emmagee.R;
 
 /**
  * operate CPU information
@@ -76,7 +76,7 @@ public class CpuInfo {
 		this.pid = pid;
 		this.context = context;
 		trafficInfo = new TrafficInfo(uid);
-		formatterFile = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		formatterFile = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 		mi = new MemoryInfo();
 		totalMemorySize = mi.getTotalMemory();
 		cpuUsedRatio = new ArrayList<String>();
@@ -123,6 +123,7 @@ public class CpuInfo {
 				idleCpu.add(Long.parseLong(toks[4]));
 				totalCpu.add(Long.parseLong(toks[1]) + Long.parseLong(toks[2]) + Long.parseLong(toks[3]) + Long.parseLong(toks[4])
 						+ Long.parseLong(toks[6]) + Long.parseLong(toks[5]) + Long.parseLong(toks[7]));
+				break;
 			}
 			cpuInfo.close();
 		} catch (FileNotFoundException e) {
@@ -312,10 +313,13 @@ public class CpuInfo {
 						String[][] heapArray = MemoryInfo.getHeapSize(pid, context);
 						heapData = heapArray[0][1]+"/"+heapArray[0][0]+Constants.COMMA+heapArray[1][1]+"/"+heapArray[1][0]+Constants.COMMA;
 					}
-					EmmageeService.bw.write(mDateTime2 + Constants.COMMA + ProcessInfo.getTopActivity(context) + Constants.COMMA +heapData+ pMemory
+					Log.d(LOG_TAG, "*** Start write to performance file ***");
+					MainService.bw.write("No TestCase Info-No Action Info,"+mDateTime2 + Constants.COMMA + ProcessInfo.getTopActivity(context) + Constants.COMMA +heapData+ pMemory
 							+ Constants.COMMA + percent + Constants.COMMA + fMemory + Constants.COMMA + processCpuRatio + Constants.COMMA
 							+ totalCpuBuffer.toString() + trafValue + Constants.COMMA + totalBatt + Constants.COMMA + currentBatt + Constants.COMMA
 							+ temperature + Constants.COMMA + voltage + Constants.LINE_END);
+					MainService.bw.flush();
+					Log.d(LOG_TAG, "*** End write to performance file ***");
 					totalCpu2 = (ArrayList<Long>) totalCpu.clone();
 					processCpu2 = processCpu;
 					idleCpu2 = (ArrayList<Long>) idleCpu.clone();
